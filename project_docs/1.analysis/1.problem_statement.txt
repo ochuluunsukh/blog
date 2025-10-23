@@ -1,0 +1,31 @@
+Simple Problem Statement
+People need an easy place on the internet to write and share their longer thoughts and stories.
+
+Right now, it's a simple tool that lets people:
+- Sign up and Log In: Have a personal account so they can be identified as the owner of their content.
+
+- Create and Manage Posts: Write an article (post), give it a title, and decide if it should be shown to the public (published).
+
+- Unique Feedback: Let others quickly show they like a post, but each person can only give one vote per post.
+
+- Find Posts Easily: Allow users to search for posts using keywords found in the title.
+
+The Solution: We need to build a simple blog app where users can sign up, write and publish their posts, and readers can easily vote—but only once per post. The app must also allow users to quickly find posts by searching their titles. This connects the right person (the user) to their articles (posts) and measures how popular the articles are (votes), while also making content discoverable.
+
+
+
+
+User:
+- email: string
+- password: string (hashed)
+
+Post:
+- title: string
+- content: string
+- published: boolean
+- owner_id: int
+- created_date: date
+
+Vote:
+- user_id: int
+- post_id: int
