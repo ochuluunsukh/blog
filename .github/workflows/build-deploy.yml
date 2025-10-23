@@ -90,10 +90,33 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            echo "Starting deployment sequence on EC2..."
+            # Set the shell to exit immediately if any command fails
+            set -e
+
+            # --- CONFIGURATION ---
+            # Your specific deployment directory
             DEPLOY_DIR="/home/ec2-user/projects/blog-api"
+            # Your specific compose file name
+            COMPOSE_FILE="docker-compose-prod.yml"
+            # !!! IMPORTANT: Change 'api' to the service name in your COMPOSE_FILE
+            SERVICE_NAME="blog-api-api-1"
+
+            echo "--- Starting Deployment Sequence ---"
+            echo "1. Checking directory access: $DEPLOY_DIR"
             cd $DEPLOY_DIR
-            docker-compose -f docker-compose-prod.yml pull
-            echo "Restarting Docker Compose services..."
-            docker-compose -f docker-compose-prod.yml up -d --remove-orphans
-            echo "Deployment finished successfully."
+
+            # 2. Pull the latest images from Docker Hub (or your registry)
+            echo "2. Pulling latest Docker images defined in $COMPOSE_FILE..."
+            docker-compose -f $COMPOSE_FILE pull
+
+            # 3. Run Alembic Migrations inside a temporary container
+            # This uses the LATEST pulled image for the 'api' service to run the migration.
+            echo "3. Executing Alembic migrations on service: $SERVICE_NAME"
+            docker-compose -f $COMPOSE_FILE run --rm $SERVICE_NAME alembic upgrade head
+
+            # 4. Restart services
+            # Stop and remove old containers, then start new ones with updated images/configs
+            echo "4. Restarting Docker Compose services..."
+            docker-compose -f $COMPOSE_FILE up -d --remove-orphans
+
+            echo "--- Deployment Complete ---"
