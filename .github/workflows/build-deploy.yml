@@ -98,7 +98,6 @@ jobs:
             DEPLOY_DIR="/home/ec2-user/projects/blog-api"
             # Your specific compose file name
             COMPOSE_FILE="docker-compose-prod.yml"
-            API_SERVICE_NAME="blog-api-api-1" # Use the service name from docker-compose
 
             echo "--- Starting Deployment Sequence ---"
             echo "1. Checking directory access: $DEPLOY_DIR"
@@ -112,10 +111,5 @@ jobs:
             # This uses the LATEST pulled image for the 'api' service to run the migration.
             echo "3. Bringing up services to run migrations..."
             docker-compose -f $COMPOSE_FILE up -d --remove-orphans
-
-            # 4. Executing Alembic migrations on the running service
-            echo "4. Executing Alembic migrations on service: $API_SERVICE_NAME"
-            # Use 'docker-compose exec' to run a command in a running container
-            docker-compose -f $COMPOSE_FILE exec -T $API_SERVICE_NAME alembic upgrade head
 
             echo "--- Deployment Complete ---"
