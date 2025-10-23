@@ -83,7 +83,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -98,8 +98,7 @@ jobs:
             DEPLOY_DIR="/home/ec2-user/projects/blog-api"
             # Your specific compose file name
             COMPOSE_FILE="docker-compose-prod.yml"
-            # !!! IMPORTANT: Change 'api' to the service name in your COMPOSE_FILE
-            SERVICE_NAME="blog-api-api-1"
+            API_SERVICE_NAME="blog-api-api-1" # Use the service name from docker-compose
 
             echo "--- Starting Deployment Sequence ---"
             echo "1. Checking directory access: $DEPLOY_DIR"
@@ -111,12 +110,12 @@ jobs:
 
             # 3. Run Alembic Migrations inside a temporary container
             # This uses the LATEST pulled image for the 'api' service to run the migration.
-            echo "3. Executing Alembic migrations on service: $SERVICE_NAME"
-            docker-compose -f $COMPOSE_FILE run --rm $SERVICE_NAME alembic upgrade head
-
-            # 4. Restart services
-            # Stop and remove old containers, then start new ones with updated images/configs
-            echo "4. Restarting Docker Compose services..."
+            echo "3. Bringing up services to run migrations..."
             docker-compose -f $COMPOSE_FILE up -d --remove-orphans
+
+            # 4. Executing Alembic migrations on the running service
+            echo "4. Executing Alembic migrations on service: $API_SERVICE_NAME"
+            # Use 'docker-compose exec' to run a command in a running container
+            docker-compose -f $COMPOSE_FILE exec -T $API_SERVICE_NAME alembic upgrade head
 
             echo "--- Deployment Complete ---"
